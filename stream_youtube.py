@@ -6,11 +6,13 @@ from bs4 import BeautifulSoup
 
 def main():
 
-	title = argv[1]
-
-	url = search(title)
-	print(url)
-	play(url)
+	#title = argv[1]
+	while True:
+		title = str(raw_input('Enter song:\n'))
+		url = search(title + ' HQ')
+		play(url)
+	
+	return
 
 def play(url):
 
@@ -20,6 +22,7 @@ def play(url):
 	call(p.split())
 
 def search(title):
+
 	query = urllib.quote(title)
 	url = "https://www.youtube.com/results?search_query=" + query
 	response = urllib2.urlopen(url)
@@ -27,7 +30,6 @@ def search(title):
 	soup = BeautifulSoup(html)
 	for vid in soup.findAll(attrs={'class':'yt-uix-tile-link'}):
 	    break
-
 	return ('https://www.youtube.com' + vid['href'])
 
 
