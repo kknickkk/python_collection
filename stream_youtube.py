@@ -2,9 +2,12 @@
 from subprocess import call, check_output
 import urllib.parse, urllib.request, urllib.error
 from bs4 import BeautifulSoup
+import re
+from sys import exit
 import lxml
 from lxml import etree
-import re
+import mpv
+
 
 def main():
 
@@ -13,25 +16,35 @@ def main():
 		
 		if choice == 1:
 			title = input('Enter song:\n')
-			url = search(title + ' HQ')
+			url , title= search(title + ' HQ')
 			play(url)
 		if choice == 2:
 			query = input('Search playlist:\n')
-			url = search(query + ' playlist')
+			url , title = search(query + ' playlist')
 			songlist = get_playlist(url)
 			for song in songlist:
 				play(song)
-
+				
 	return
 
 def play(url):
-	print('Playing:\n')
+	print("Playing:\n")
 	get_title(url)
 	string = 'youtube-dl -f140 -g ' + url 
+	i = ''
 	try:
-		y = check_output(string.split())
-		p = 'mpv ' + y.decode()
-		call(p.split())
+		y = check_output(string.split()).decode()
+		player = mpv.MPV()
+		player.play(y)
+		i = input()
+				
+		if i == 'n':
+			player.quit()
+			del player
+			return 
+
+	except KeyboardInterrupt:
+		exit()
 	except:
 		pass
 
@@ -42,22 +55,21 @@ def search(title):
 	response = urllib.request.urlopen(url)
 	html = response.read()
 	soup = BeautifulSoup(html, "html.parser")
-	for vid in soup.findAll(attrs={'class':'yt-uix-tile-link'}):
-	    break
-	return ('https://www.youtube.com' + vid['href'])
-
+	pop = soup.findAll(attrs={'class':'yt-uix-tile-link'}).pop(0)
+	href = pop.get('href')
+	title = pop.get('title')
+	
+	return ('https://www.youtube.com' + href), title
 
 def get_title(url):
 	youtube = etree.HTML(urllib.request.urlopen(url).read()) 
 	video_title = youtube.xpath("//span[@id='eow-title']/@title") 
 	print (''.join(video_title))
 
+
 def get_playlist(url):
-    sTUBE = ''
-    cPL = ''
-    amp = 0
     final_url = []
-    
+
     if 'list=' in url:
         eq = url.rfind('=') + 1
         cPL = url[eq:]
@@ -67,8 +79,7 @@ def get_playlist(url):
         exit(1)
     
     try:
-        yTUBE = urllib.request.urlopen(url).read()
-        sTUBE = str(yTUBE)
+        sTUBE = str(urllib.request.urlopen(url).read())
     except urllib.error.URLError as e:
         print(e.reason)
     
