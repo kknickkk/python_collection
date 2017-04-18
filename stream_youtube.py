@@ -15,8 +15,8 @@ def main():
 		choice = int(input('1. Manually enter song\n2. Search playlist\n'))
 		
 		if choice == 1:
-			title = input('Enter song:\n')
-			url , title= search(title + ' HQ')
+			query = input('Enter song:\n')
+			url , title= search(query + ' HQ')
 			play(url)
 		if choice == 2:
 			query = input('Search playlist:\n')
@@ -37,7 +37,7 @@ def play(url):
 		player = mpv.MPV()
 		player.play(y)
 		i = input()
-				
+
 		if i == 'n':
 			player.quit()
 			del player
