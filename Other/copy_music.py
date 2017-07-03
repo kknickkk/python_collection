@@ -104,13 +104,19 @@ def remove_old_mp3(music_mp3, music_m4a, usb_mp3):
 			if s not in music_m4a:
 				statistics[1] += 1
 				ml.print_red('Removing ' + item)
-				if DEBUG == False:
+				if not DEBUG:
 					call(['rm', item])
 
 def convert_m4a(music_m4a, usb_mp3):
+	try:
+		call(['rm', 'temp.mp3'])
+	except:
+		pass
+
 	for item in music_m4a:
 		f_in = item
 		temp = check_output(['pwd']).decode().strip('\n')
+
 		l = glob(temp + '/*')
 		temp = temp + '/temp.mp3'
 		f_out = item.replace(music_path, usb_path)
@@ -118,7 +124,7 @@ def convert_m4a(music_m4a, usb_mp3):
 		if f_out not in usb_mp3:
 			ml.print_green("Converting: " + f_in)
 			statistics[4] += 1
-			if DEBUG == False:
+			if not DEBUG:
 				call(['ffmpeg','-loglevel', 'quiet','-i', f_in, '-acodec', 'libmp3lame', '-ab', '128k', temp])
 				call(['mv', temp, f_out])
 
@@ -127,28 +133,42 @@ def copy_mp3(music_mp3, usb_mp3):
 		if item.replace(music_path, usb_path) not in usb_mp3:
 			statistics[0] += 1
 			ml.print_green('Copying ' + item.strip(music_path))
-			if DEBUG == False:
+			if not DEBUG:
 				call(['cp', item, item.replace(music_path, usb_path)])
 
 def create_missing_folders(music_f, usb_f):
+
 	for item in music_f:
-		if item.replace(music_path, usb_path) not in usb_f:
+		dest = item.replace(music_path, usb_path)
+		
+		if dest not in usb_f:
 			statistics[2] += 1
-			ml.print_green('Creating ' + item.replace(music_path, usb_path))
-			if DEBUG == False:
-				call(['mkdir', item.replace(music_path, usb_path)])
-			subfolders = glob(item + '/*')
-			for sub in subfolders:
+			
+			ml.print_green('Creating ' + dest)
+			if not DEBUG:
+				call(['mkdir', dest])
+
+		#print("M: " + item)
+		#print("D:" + dest)
+		subfolders_m = glob(item + '/*')
+		subfolders_d = glob(dest + '/*')
+
+		for sub in subfolders_m:
+			tras = sub.replace(music_path, usb_path)
+			#print("---> " + sub)
+			#print(subfolders_m)
+			if tras not in subfolders_d:
+				ml.print_red("Should be creating " + tras)
 				statistics[2] += 1
-				if DEBUG == False:
-					call(['mkdir', sub.replace(music_path, usb_path)])
+				if not DEBUG:
+					call(['mkdir', tras])
 
 def remove_excess_folders(music_f, usb_f):
 	for item in usb_f:
 		if item.replace(usb_path, music_path) not in music_f:
 			statistics[3] += 1
 			ml.print_red("Removing " + item)
-			if DEBUG == False:
+			if not DEBUG:
 				call(['rm', '-r', item])
 	
 
